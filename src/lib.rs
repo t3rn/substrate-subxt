@@ -51,7 +51,10 @@ pub use sp_runtime;
 
 use codec::Decode;
 use futures::future;
-use jsonrpsee::client::Subscription;
+use jsonrpsee::client::{
+    WsClient,
+    WsSubscription as Subscription,
+};
 use sc_rpc_api::state::ReadProof;
 use sp_core::{
     storage::{
@@ -112,12 +115,37 @@ use crate::{
     },
 };
 
+// #[derive(Clone)]
+// pub enum JsonRpcClient {
+//     WebSocket(WsClient),
+//     Http(HttpClient),
+// }
+//
+// impl JsonRpcClient {
+//     pub async fn request<Ret>(&self, method: &str, params: Params) -> Result<Ret, RpcError>
+//     where
+//         Ret: serde::de::DeserializeOwned,
+//     {
+//         match self {
+//             Self::WebSocket(inner) => inner.request(method, params).await,
+//             Self::Http(inner) => inner.request(method, params).await,
+//         }
+//     }
+//
+//     pub async fn subscribe<T>(&self, subscribe_method: &str, params: Params, unsubscribe_method: &str) -> Result<Subscription<T>, RpcError> {
+//         match self {
+//             Self::WebSocket(inner) => inner.subscribe(subscribe_method, params, unsubscribe_method).await,
+//             Self::Http(inner) => Err(()),
+//         }
+//     }
+// }
+
 /// ClientBuilder for constructing a Client.
 #[derive(Default)]
 pub struct ClientBuilder<T: Runtime> {
     _marker: std::marker::PhantomData<T>,
     url: Option<String>,
-    client: Option<jsonrpsee::Client>,
+    client: Option<WsClient>,
     page_size: Option<u32>,
 }
 
@@ -133,7 +161,7 @@ impl<T: Runtime> ClientBuilder<T> {
     }
 
     /// Sets the jsonrpsee client.
-    pub fn set_client<P: Into<jsonrpsee::Client>>(mut self, client: P) -> Self {
+    pub fn set_client(mut self, client: WsClient) -> Self {
         self.client = Some(client.into());
         self
     }
@@ -157,9 +185,9 @@ impl<T: Runtime> ClientBuilder<T> {
         } else {
             let url = self.url.as_deref().unwrap_or("ws://127.0.0.1:9944");
             if url.starts_with("ws://") || url.starts_with("wss://") {
-                jsonrpsee::ws_client(url).await?
+                WsClient::new(url).await?
             } else {
-                jsonrpsee::http_client(url)
+                todo!("this is dummy implementation; HTTP is missing");
             }
         };
         let rpc = Rpc::new(client);

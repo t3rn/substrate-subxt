@@ -14,7 +14,7 @@
 // You should have received a copy of the GNU General Public License
 // along with substrate-subxt.  If not, see <http://www.gnu.org/licenses/>.
 
-use jsonrpsee::client::Subscription;
+use jsonrpsee::client::WsSubscription as Subscription;
 use sp_core::storage::StorageChangeSet;
 use std::collections::VecDeque;
 

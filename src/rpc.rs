@@ -30,12 +30,14 @@ use core::{
 };
 use frame_metadata::RuntimeMetadataPrefixed;
 use jsonrpsee::{
-    client::Subscription,
-    common::{
+    client::{
+        WsClient,
+        WsSubscription as Subscription,
+    },
+    types::jsonrpc::{
         to_value as to_json_value,
         Params,
     },
-    Client,
 };
 use sc_rpc_api::state::ReadProof;
 use serde::Serialize;
@@ -110,7 +112,7 @@ pub struct SystemProperties {
 
 /// Client for substrate rpc interfaces
 pub struct Rpc<T: Runtime> {
-    client: Client,
+    client: WsClient,
     marker: PhantomData<T>,
 }
 
@@ -124,7 +126,7 @@ impl<T: Runtime> Clone for Rpc<T> {
 }
 
 impl<T: Runtime> Rpc<T> {
-    pub fn new(client: Client) -> Self {
+    pub fn new(client: WsClient) -> Self {
         Self {
             client,
             marker: PhantomData,
