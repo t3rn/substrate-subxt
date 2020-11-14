@@ -118,6 +118,7 @@ use crate::{
             Balances,
         },
         contracts::Contracts,
+        runtime_gateway::RuntimeGateway,
         session::Session,
         staking::Staking,
         sudo::Sudo,
@@ -171,6 +172,8 @@ impl Session for DefaultNodeRuntime {
 }
 
 impl Contracts for DefaultNodeRuntime {}
+
+impl RuntimeGateway for DefaultNodeRuntime {}
 
 impl Sudo for DefaultNodeRuntime {}
 
@@ -241,6 +244,8 @@ impl Balances for ContractsTemplateRuntime {
 }
 
 impl Contracts for ContractsTemplateRuntime {}
+
+impl RuntimeGateway for ContractsTemplateRuntime {}
 
 impl Sudo for ContractsTemplateRuntime {}
 
