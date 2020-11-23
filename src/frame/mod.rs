@@ -31,6 +31,7 @@ use sp_core::storage::StorageKey;
 
 pub mod balances;
 pub mod contracts;
+pub mod contracts_gateway;
 pub mod runtime_gateway;
 pub mod session;
 pub mod staking;

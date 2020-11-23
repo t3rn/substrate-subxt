@@ -642,10 +642,12 @@ mod tests {
             )
             .await
             .unwrap();
-        assert!(client
-            .has_key(public.clone().into(), "aura".to_string())
-            .await
-            .unwrap());
+        assert!(
+            client
+                .has_key(public.clone().into(), "aura".to_string())
+                .await
+                .unwrap()
+        );
         // Alice is an authority, so blocks should be produced.
         assert_eq!(blocks.next().await.number, 1);
     }

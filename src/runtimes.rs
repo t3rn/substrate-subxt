@@ -118,6 +118,7 @@ use crate::{
             Balances,
         },
         contracts::Contracts,
+        contracts_gateway::ContractsGateway,
         runtime_gateway::RuntimeGateway,
         session::Session,
         staking::Staking,
@@ -174,6 +175,8 @@ impl Session for DefaultNodeRuntime {
 impl Contracts for DefaultNodeRuntime {}
 
 impl RuntimeGateway for DefaultNodeRuntime {}
+
+impl ContractsGateway for DefaultNodeRuntime {}
 
 impl Sudo for DefaultNodeRuntime {}
 
@@ -246,6 +249,8 @@ impl Balances for ContractsTemplateRuntime {
 impl Contracts for ContractsTemplateRuntime {}
 
 impl RuntimeGateway for ContractsTemplateRuntime {}
+
+impl ContractsGateway for ContractsTemplateRuntime {}
 
 impl Sudo for ContractsTemplateRuntime {}
 

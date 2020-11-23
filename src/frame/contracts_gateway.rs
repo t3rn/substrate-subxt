@@ -17,11 +17,20 @@
 //! Implements support for the pallet_contracts module.
 
 use crate::{
-    contracts::Gas,
+    contracts::{
+        Contracts,
+        Gas,
+    },
     frame::{
         balances::{
             Balances,
             BalancesEventsDecoder,
+        },
+        runtime_gateway::{
+            CallStamp,
+            ExecutionProofs,
+            ExecutionStamp,
+            TransferEntry,
         },
         system::{
             System,
@@ -38,13 +47,13 @@ use sp_core::H256;
 
 /// The subset of the `pallet_contracts::Trait` that a client must implement.
 #[module]
-pub trait RuntimeGateway: System + Balances {}
+pub trait ContractsGateway: System + Balances {}
 
 /// Stores the given binary Wasm code into the chain's storage and returns
 /// its `codehash`.
 /// You can instantiate contracts only with stored code.
 #[derive(Clone, Debug, Eq, PartialEq, Call, Encode)]
-pub struct MultistepCallCall<'a, T: RuntimeGateway> {
+pub struct MultistepCallCall<'a, T: ContractsGateway> {
     /// Runtime marker.
     pub _runtime: PhantomData<T>,
     /// Address of the execution requester.
@@ -64,61 +73,12 @@ pub struct MultistepCallCall<'a, T: RuntimeGateway> {
     /// Data to initialize the contract with.
     pub data: &'a [u8],
 }
-#[derive(Debug, Default, PartialEq, Eq, Encode, Decode, Clone)]
-#[codec(compact)]
-/// Execution stamp for an internal call to an existing contract outside of the attached code.
-pub struct CallStamp {
-    /// Merkle Root of storage trie of that contract before execution.
-    pub pre_storage: Vec<u8>,
-    /// Merkle Root of storage trie of that contract after execution.
-    pub post_storage: Vec<u8>,
-    /// Address of that contract.
-    pub dest: Vec<u8>,
-}
-
-#[derive(Debug, Default, PartialEq, Eq, Encode, Decode, Clone)]
-#[codec(compact)]
-/// TransferEntry
-pub struct TransferEntry {
-    /// Address of the destination account.
-    pub to: H256,
-    /// Value of balance transfer.
-    pub value: u32,
-    /// Optional data attached to transfer.
-    pub data: Vec<u8>,
-}
-
-#[derive(Debug, PartialEq, Eq, Encode, Decode, Default, Clone)]
-/// Proof of execution produced by gateway.
-pub struct ExecutionProofs {
-    /// Result of the execution.
-    result: Option<Vec<u8>>,
-    /// Merkle Root of storage trie after execution.
-    storage: Option<Vec<u8>>,
-    /// All deferred transfers (on escrow account) from within the executed WASM code.
-    deferred_transfers: Vec<TransferEntry>,
-}
-
-#[derive(Debug, PartialEq, Eq, Encode, Decode, Default, Clone)]
-/// Stamp after successful execution phase.
-pub struct ExecutionStamp {
-    /// Time.
-    timestamp: u64,
-    /// Execution Phase (Execution / Commit / Revert).
-    phase: u8,
-    /// Proofs of execution produced by gateway.
-    proofs: Option<ExecutionProofs>,
-    /// Execution stamps for each internal call to an existing contract outside of the attached code.
-    call_stamps: Vec<CallStamp>,
-    /// Optional error code.
-    failure: Option<u8>, // Error Code
-}
 
 /// Multistep Call Execution phase after event.
 ///
 /// Emitted upon successful execution of a multistep call, emitting the entire execution stamp via event.
 #[derive(Clone, Debug, Eq, PartialEq, Event, Decode)]
-pub struct MultistepExecutePhaseSuccessEvent<T: RuntimeGateway> {
+pub struct MultistepExecutePhaseSuccessEvent<T: ContractsGateway> {
     /// Stamp after successful execution phase.
     pub execution_stamp: ExecutionStamp,
     /// Runtime marker.
@@ -152,7 +112,7 @@ mod tests {
     };
 
     static STASH_NONCE: std::sync::atomic::AtomicU32 = AtomicU32::new(0);
-    // const ALICE_KEYPAIR: PairSigner<ContractsTemplateRuntime, Pair> = PairSigner::new(AccountKeyring::Alice.pair());
+
     struct TestContext {
         client: Client<ContractsTemplateRuntime>,
         signer: PairSigner<ContractsTemplateRuntime, Pair>,
@@ -197,6 +157,7 @@ mod tests {
                 (module
                     (func (export "call"))
                     (func (export "deploy"))
+                        (data (i32.const 4) "\09\00\00\00\00\00\00\00")
                 )
             "#;
             let code = wabt::wat2wasm(CONTRACT).expect("invalid wabt");
@@ -206,7 +167,7 @@ mod tests {
             let target_dest: AccountId32 = new_account.public().into();
             let phase: u8 = 0;
             let value: <ContractsTemplateRuntime as Balances>::Balance = 0;
-            let gas: Gas = 500_000;
+            let gas: Gas = 500_000_000;
             let result = self
                 .client
                 .multistep_call_and_watch(
