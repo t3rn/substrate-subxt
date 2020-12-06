@@ -53,7 +53,7 @@ pub trait ContractsGateway: System + Balances {}
 /// its `codehash`.
 /// You can instantiate contracts only with stored code.
 #[derive(Clone, Debug, Eq, PartialEq, Call, Encode)]
-pub struct MultistepCallCall<'a, T: ContractsGateway> {
+pub struct GatewayContractExecCall<'a, T: ContractsGateway> {
     /// Runtime marker.
     pub _runtime: PhantomData<T>,
     /// Address of the execution requester.
@@ -149,7 +149,7 @@ mod tests {
         }
 
 
-        async fn multistep_call(
+        async fn gateway_contract_exec(
             &self,
         ) -> Result<MultistepExecutePhaseSuccessEvent<ContractsTemplateRuntime>, Error>
         {
@@ -157,7 +157,6 @@ mod tests {
                 (module
                     (func (export "call"))
                     (func (export "deploy"))
-                        (data (i32.const 4) "\09\00\00\00\00\00\00\00")
                 )
             "#;
             let code = wabt::wat2wasm(CONTRACT).expect("invalid wabt");
@@ -170,7 +169,7 @@ mod tests {
             let gas: Gas = 500_000_000;
             let result = self
                 .client
-                .multistep_call_and_watch(
+                .gateway_contract_exec_and_watch(
                     &self.signer,
                     requester,
                     target_dest,
@@ -181,7 +180,7 @@ mod tests {
                     &[],   // input data
                 )
                 .await?;
-            log::info!("multistep_call_and_watch res: {:?}", result);
+            log::info!("gateway_contract_exec_and_watch res: {:?}", result);
             let execution_success_event =
                 result.multistep_execute_phase_success()?.ok_or_else(|| {
                     Error::Other(
@@ -198,13 +197,13 @@ mod tests {
     }
 
     #[async_std::test]
-    async fn tx_multistep_call() {
+    async fn tx_gateway_contract_exec() {
         let ctx = TestContext::init().await;
-        let multistep_call_res = ctx.multistep_call().await;
+        let gateway_contract_exec_res = ctx.gateway_contract_exec().await;
 
         assert!(
-            multistep_call_res.is_ok(),
-            format!("Error calling multistep_call: {:?}", multistep_call_res)
+            gateway_contract_exec_res.is_ok(),
+            format!("Error calling gateway_contract_exec: {:?}", gateway_contract_exec_res)
         );
     }
 }
