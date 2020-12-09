@@ -242,7 +242,6 @@ mod tests {
                     &[],   // input data
                 )
                 .await?;
-            log::info!("multistep_call_and_watch res: {:?}", result);
             let execution_success_event =
                 result.runtime_gateway_versatile_execution_success()?.ok_or_else(|| {
                     Error::Other(
