@@ -78,8 +78,30 @@ pub struct GatewayContractExecCall<'a, T: ContractsGateway> {
 ///
 /// Emitted upon successful execution of a multistep call, emitting the entire execution stamp via event.
 #[derive(Clone, Debug, Eq, PartialEq, Event, Decode)]
-pub struct MultistepExecutePhaseSuccessEvent<T: ContractsGateway> {
+pub struct ContractsGatewayExecutionSuccessEvent<T: ContractsGateway> {
     /// Stamp after successful execution phase.
+    pub execution_stamp: ExecutionStamp,
+    /// Runtime marker.
+    pub _runtime: PhantomData<T>,
+}
+
+/// Multistep Call Revert phase after event.
+///
+/// Emitted upon successful revert of a multistep call, emitting the entire execution stamp via event.
+#[derive(Clone, Debug, Eq, PartialEq, Event, Decode)]
+pub struct ContractsGatewayExecutionRevertEvent<T: ContractsGateway> {
+    /// Stamp after successful execution phase.
+    pub execution_stamp: ExecutionStamp,
+    /// Runtime marker.
+    pub _runtime: PhantomData<T>,
+}
+
+/// Multistep Call Revert phase after event.
+///
+/// Emitted upon successful revert of a multistep call, emitting the entire execution stamp via event.
+#[derive(Clone, Debug, Eq, PartialEq, Event, Decode)]
+pub struct ContractsGatewayExecutionCommitEvent<T: ContractsGateway> {
+    /// Stamp after successful commit phase.
     pub execution_stamp: ExecutionStamp,
     /// Runtime marker.
     pub _runtime: PhantomData<T>,
@@ -151,7 +173,7 @@ mod tests {
 
         async fn gateway_contract_exec(
             &self,
-        ) -> Result<MultistepExecutePhaseSuccessEvent<ContractsTemplateRuntime>, Error>
+        ) -> Result<ContractsGatewayExecutionSuccessEvent<ContractsTemplateRuntime>, Error>
         {
             const CONTRACT: &str = r#"
                 (module
@@ -164,7 +186,7 @@ mod tests {
             let new_account = Pair::generate().0;
             let requester: AccountId32 = sp_keyring::AccountKeyring::Bob.to_account_id();
             let target_dest: AccountId32 = new_account.public().into();
-            let phase: u8 = 0;
+            let phase: u8 = 1;
             let value: <ContractsTemplateRuntime as Balances>::Balance = 0;
             let gas: Gas = 500_000_000;
             let result = self
@@ -181,12 +203,11 @@ mod tests {
                 )
                 .await?;
             log::info!("gateway_contract_exec_and_watch res: {:?}", result);
-            let execution_success_event =
-                result.multistep_execute_phase_success()?.ok_or_else(|| {
-                    Error::Other(
-                        "Failed to find a MultistepExecutePhaseSuccess event".into(),
-                    )
-                })?;
+            let execution_success_event = result
+                .contracts_gateway_execution_success()?
+                .ok_or_else(|| {
+                Error::Other("Failed to find a MultistepExecutePhaseSuccess event".into())
+            })?;
             log::info!(
                 "MultistepExecutePhaseSuccess execution_stamp: {:?}",
                 execution_success_event.execution_stamp
@@ -203,7 +224,10 @@ mod tests {
 
         assert!(
             gateway_contract_exec_res.is_ok(),
-            format!("Error calling gateway_contract_exec: {:?}", gateway_contract_exec_res)
+            format!(
+                "Error calling gateway_contract_exec: {:?}",
+                gateway_contract_exec_res
+            )
         );
     }
 }

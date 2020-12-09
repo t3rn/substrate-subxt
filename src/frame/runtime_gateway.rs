@@ -118,8 +118,30 @@ pub struct ExecutionStamp {
 ///
 /// Emitted upon successful execution of a multistep call, emitting the entire execution stamp via event.
 #[derive(Clone, Debug, Eq, PartialEq, Event, Decode)]
-pub struct MultistepExecutePhaseSuccessEvent<T: RuntimeGateway> {
+pub struct RuntimeGatewayVersatileExecutionSuccessEvent<T: RuntimeGateway> {
     /// Stamp after successful execution phase.
+    pub execution_stamp: ExecutionStamp,
+    /// Runtime marker.
+    pub _runtime: PhantomData<T>,
+}
+
+/// Multistep Call Commit phase after event.
+///
+/// Emitted upon successful commit of a multistep call, emitting the result via event.
+#[derive(Clone, Debug, Eq, PartialEq, Event, Decode)]
+pub struct RuntimeGatewayVersatileCommitSuccessEvent<T: RuntimeGateway> {
+    /// Stamp after successful commit phase.
+    pub execution_stamp: ExecutionStamp,
+    /// Runtime marker.
+    pub _runtime: PhantomData<T>,
+}
+
+/// Multistep Call Revert phase after event.
+///
+/// Emitted upon successful revert of a multistep call, emitting the entire execution stamp via event.
+#[derive(Clone, Debug, Eq, PartialEq, Event, Decode)]
+pub struct RuntimeGatewayVersatileRevertSuccessEvent<T: RuntimeGateway> {
+    /// Stamp after successful revert phase.
     pub execution_stamp: ExecutionStamp,
     /// Runtime marker.
     pub _runtime: PhantomData<T>,
@@ -191,7 +213,7 @@ mod tests {
 
         async fn multistep_call(
             &self,
-        ) -> Result<MultistepExecutePhaseSuccessEvent<ContractsTemplateRuntime>, Error>
+        ) -> Result<RuntimeGatewayVersatileExecutionSuccessEvent<ContractsTemplateRuntime>, Error>
         {
             const CONTRACT: &str = r#"
                 (module
@@ -222,7 +244,7 @@ mod tests {
                 .await?;
             log::info!("multistep_call_and_watch res: {:?}", result);
             let execution_success_event =
-                result.multistep_execute_phase_success()?.ok_or_else(|| {
+                result.runtime_gateway_versatile_execution_success()?.ok_or_else(|| {
                     Error::Other(
                         "Failed to find a MultistepExecutePhaseSuccess event".into(),
                     )
