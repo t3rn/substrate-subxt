@@ -18,7 +18,6 @@
 
 use crate::{
     contracts::{
-        Contracts,
         Gas,
     },
     frame::{
@@ -27,10 +26,7 @@ use crate::{
             BalancesEventsDecoder,
         },
         runtime_gateway::{
-            CallStamp,
-            ExecutionProofs,
             ExecutionStamp,
-            TransferEntry,
         },
         system::{
             System,
@@ -43,7 +39,6 @@ use codec::{
     Encode,
 };
 use core::marker::PhantomData;
-use sp_core::H256;
 
 /// The subset of the `pallet_contracts::Trait` that a client must implement.
 #[module]
