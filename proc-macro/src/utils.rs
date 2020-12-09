@@ -111,11 +111,9 @@ pub fn build_struct(ident: &syn::Ident, fields: &[Field]) -> TokenStream {
 
 pub fn ident_to_name(ident: &syn::Ident, ty: &str) -> String {
     let name = ident.to_string();
-    let name = name.trim_end_matches(ty);
-    if name.is_empty() {
-        ty.to_string()
-    } else {
-        name.to_string()
+    match name.strip_suffix(ty) {
+        Some(name) => name.to_string(),
+        None => ty.to_string(),
     }
 }
 

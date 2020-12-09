@@ -1,19 +1,11 @@
-# subxt &middot; ![build](https://github.com/paritytech/substrate-subxt/workflows/Rust/badge.svg) [![Latest Version](https://img.shields.io/crates/v/substrate-subxt.svg)](https://crates.io/crates/substrate-subxt)
+# t3rn subxt 
 
-A library to **sub**mit e**xt**rinsics to a [substrate](https://github.com/paritytech/substrate) node via RPC.
+That's a fork of original [substrate-subxt](https://github.com/paritytech/substrate) - a library to **sub**mit e**xt**rinsics to a [substrate](https://github.com/paritytech/substrate) node via RPC.
 
-## Usage
-
-See [examples](./examples).
-
-**Alternatives**
-
-[substrate-api-client](https://github.com/scs/substrate-api-client) provides similar functionality.
-
-## Subxt Client
-By default the client builder will connect to a full node via rpc. The `subxt-client` helps
-embedding a light client directly. It can also be used to embed a full node. This is especially
-useful for testing and ci.
+It extends the original with ways to interact with [gateways](../../gateway) i.e.:
+- create & sign transaction dispatchable for `multistep_call`
+- send calls for `multistep_call`
+- watch for events of after-execution of `multistep_call`
 
 #### License
 

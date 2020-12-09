@@ -106,6 +106,7 @@ impl<T: System> EventsDecoder<T> {
         decoder.register_type_size::<T::AccountId>("AccountId");
         decoder.register_type_size::<T::BlockNumber>("BlockNumber");
         decoder.register_type_size::<T::Hash>("Hash");
+        decoder.register_type_size::<Vec<u8>>("ExecutionStamp");
         decoder.register_type_size::<u8>("VoteThreshold");
         decoder
     }

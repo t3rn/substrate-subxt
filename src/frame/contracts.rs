@@ -126,7 +126,6 @@ pub struct ContractExecutionEvent<T: Contracts> {
     /// SCALE encoded contract event data.
     pub data: Vec<u8>,
 }
-
 #[cfg(test)]
 #[cfg(feature = "integration-tests")]
 mod tests {
