@@ -47,6 +47,10 @@ use crate::{
         EventArg,
         Metadata,
     },
+    runtime_gateway::{
+        ExecutionStampEmittable,
+        TransferEntry,
+    },
     Phase,
     System,
 };
@@ -96,6 +100,8 @@ impl<T: System> EventsDecoder<T> {
         decoder.register_type_size::<[u8; 32]>("AuthorityId");
         decoder.register_type_size::<u8>("u8");
         decoder.register_type_size::<u32>("u32");
+        decoder.register_type_size::<u64>("u64");
+        decoder.register_type_size::<u128>("u128");
         decoder.register_type_size::<u32>("AccountIndex");
         decoder.register_type_size::<u32>("SessionIndex");
         decoder.register_type_size::<u32>("PropIndex");
@@ -106,8 +112,9 @@ impl<T: System> EventsDecoder<T> {
         decoder.register_type_size::<T::AccountId>("AccountId");
         decoder.register_type_size::<T::BlockNumber>("BlockNumber");
         decoder.register_type_size::<T::Hash>("Hash");
-        decoder.register_type_size::<Vec<u8>>("ExecutionStamp");
         decoder.register_type_size::<u8>("VoteThreshold");
+        decoder.register_type_size::<ExecutionStampEmittable>("ExecutionStampEmittable");
+        decoder.register_type_size::<TransferEntry>("TransferEntry");
         decoder
     }
 
@@ -330,7 +337,7 @@ mod tests {
                                     "ExtrinsicSuccess".to_string(),
                                 ),
                                 arguments: DecodeDifferent::Decoded(vec![
-                                    "DispatchInfo".to_string()
+                                    "DispatchInfo".to_string(),
                                 ]),
                                 documentation: DecodeDifferent::Decoded(vec![]),
                             },

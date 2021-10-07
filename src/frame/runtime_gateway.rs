@@ -92,26 +92,39 @@ pub struct TransferEntry {
 /// Proof of execution produced by gateway.
 pub struct ExecutionProofs {
     /// Result of the execution.
-    result: Option<Vec<u8>>,
+    pub result: Option<Vec<u8>>,
     /// Merkle Root of storage trie after execution.
-    storage: Option<Vec<u8>>,
+    pub storage: Option<Vec<u8>>,
     /// All deferred transfers (on escrow account) from within the executed WASM code.
-    deferred_transfers: Vec<TransferEntry>,
+    pub deferred_transfers: Vec<TransferEntry>,
+}
+
+#[derive(Debug, PartialEq, Eq, Encode, Decode, Default, Clone)]
+/// Emitted execution stamp after successful execution phase.
+pub struct ExecutionStampEmittable {
+    /// Time.
+    pub timestamp: u64,
+    /// Execution Phase (Execution / Commit / Revert).
+    pub phase: u8,
+    /// Proofs of execution produced by gateway.
+    pub result: Vec<u8>,
+    /// All deferred transfers (on escrow account) from within the executed WASM code.
+    pub deferred_transfers: Vec<TransferEntry>,
 }
 
 #[derive(Debug, PartialEq, Eq, Encode, Decode, Default, Clone)]
 /// Stamp after successful execution phase.
 pub struct ExecutionStamp {
     /// Time.
-    timestamp: u64,
+    pub timestamp: u64,
     /// Execution Phase (Execution / Commit / Revert).
-    phase: u8,
+    pub phase: u8,
     /// Proofs of execution produced by gateway.
-    proofs: Option<ExecutionProofs>,
+    pub proofs: Option<ExecutionProofs>,
     /// Execution stamps for each internal call to an existing contract outside of the attached code.
-    call_stamps: Vec<CallStamp>,
+    pub call_stamps: Vec<CallStamp>,
     /// Optional error code.
-    failure: Option<u8>, // Error Code
+    pub failure: Option<u8>, // Error Code
 }
 
 /// Multistep Call Execution phase after event.
@@ -120,7 +133,7 @@ pub struct ExecutionStamp {
 #[derive(Clone, Debug, Eq, PartialEq, Event, Decode)]
 pub struct RuntimeGatewayVersatileExecutionSuccessEvent<T: RuntimeGateway> {
     /// Stamp after successful execution phase.
-    pub execution_stamp: ExecutionStamp,
+    pub execution_stamp: ExecutionStampEmittable,
     /// Runtime marker.
     pub _runtime: PhantomData<T>,
 }
@@ -131,7 +144,7 @@ pub struct RuntimeGatewayVersatileExecutionSuccessEvent<T: RuntimeGateway> {
 #[derive(Clone, Debug, Eq, PartialEq, Event, Decode)]
 pub struct RuntimeGatewayVersatileCommitSuccessEvent<T: RuntimeGateway> {
     /// Stamp after successful commit phase.
-    pub execution_stamp: ExecutionStamp,
+    pub execution_stamp: ExecutionStampEmittable,
     /// Runtime marker.
     pub _runtime: PhantomData<T>,
 }
@@ -142,7 +155,7 @@ pub struct RuntimeGatewayVersatileCommitSuccessEvent<T: RuntimeGateway> {
 #[derive(Clone, Debug, Eq, PartialEq, Event, Decode)]
 pub struct RuntimeGatewayVersatileRevertSuccessEvent<T: RuntimeGateway> {
     /// Stamp after successful revert phase.
-    pub execution_stamp: ExecutionStamp,
+    pub execution_stamp: ExecutionStampEmittable,
     /// Runtime marker.
     pub _runtime: PhantomData<T>,
 }
@@ -210,11 +223,12 @@ mod tests {
             }
         }
 
-
         async fn multistep_call(
             &self,
-        ) -> Result<RuntimeGatewayVersatileExecutionSuccessEvent<ContractsTemplateRuntime>, Error>
-        {
+        ) -> Result<
+            RuntimeGatewayVersatileExecutionSuccessEvent<ContractsTemplateRuntime>,
+            Error,
+        > {
             const CONTRACT: &str = r#"
                 (module
                     (func (export "call"))
@@ -242,9 +256,9 @@ mod tests {
                     &[],   // input data
                 )
                 .await?;
-            log::info!("multistep_call_and_watch res: {:?}", result);
-            let execution_success_event =
-                result.runtime_gateway_versatile_execution_success()?.ok_or_else(|| {
+            let execution_success_event = result
+                .runtime_gateway_versatile_execution_success()?
+                .ok_or_else(|| {
                     Error::Other(
                         "Failed to find a MultistepExecutePhaseSuccess event".into(),
                     )

@@ -17,17 +17,13 @@
 //! Implements support for the pallet_contracts module.
 
 use crate::{
-    contracts::{
-        Gas,
-    },
+    contracts::Gas,
     frame::{
         balances::{
             Balances,
             BalancesEventsDecoder,
         },
-        runtime_gateway::{
-            ExecutionStamp,
-        },
+        runtime_gateway::ExecutionStampEmittable,
         system::{
             System,
             SystemEventsDecoder,
@@ -75,7 +71,7 @@ pub struct GatewayContractExecCall<'a, T: ContractsGateway> {
 #[derive(Clone, Debug, Eq, PartialEq, Event, Decode)]
 pub struct ContractsGatewayExecutionSuccessEvent<T: ContractsGateway> {
     /// Stamp after successful execution phase.
-    pub execution_stamp: ExecutionStamp,
+    pub execution_stamp: ExecutionStampEmittable,
     /// Runtime marker.
     pub _runtime: PhantomData<T>,
 }
@@ -86,7 +82,7 @@ pub struct ContractsGatewayExecutionSuccessEvent<T: ContractsGateway> {
 #[derive(Clone, Debug, Eq, PartialEq, Event, Decode)]
 pub struct ContractsGatewayExecutionRevertEvent<T: ContractsGateway> {
     /// Stamp after successful execution phase.
-    pub execution_stamp: ExecutionStamp,
+    pub execution_stamp: ExecutionStampEmittable,
     /// Runtime marker.
     pub _runtime: PhantomData<T>,
 }
@@ -97,7 +93,7 @@ pub struct ContractsGatewayExecutionRevertEvent<T: ContractsGateway> {
 #[derive(Clone, Debug, Eq, PartialEq, Event, Decode)]
 pub struct ContractsGatewayExecutionCommitEvent<T: ContractsGateway> {
     /// Stamp after successful commit phase.
-    pub execution_stamp: ExecutionStamp,
+    pub execution_stamp: ExecutionStampEmittable,
     /// Runtime marker.
     pub _runtime: PhantomData<T>,
 }
